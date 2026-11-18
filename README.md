@@ -1,1 +1,35 @@
-# living-library
+# The Living Library widget
+
+A searchable, sortable catalogue of the books PocketMFA writers have recommended in the
+Living Library. It mirrors the Bookshop.org list at
+https://bookshop.org/lists/the-living-library and links every title through PocketMFA's
+Bookshop affiliate ID.
+
+Live page (GitHub Pages): https://scottysegal727.github.io/living-library/
+
+## Embed
+
+```html
+<iframe src="https://scottysegal727.github.io/living-library/" title="The Living Library"
+        style="width:100%;height:900px;border:0" loading="lazy"></iframe>
+```
+
+## Files
+
+- `index.html` is the published widget. It is generated; do not edit it by hand.
+- `src/template.html` holds the layout, styles and script.
+- `data/books.json` has one record per book (ISBN, title, author, category, genres, subjects, publisher, year, pages, format, description).
+- `data/covers.json` has small built-in cover thumbnails keyed by ISBN.
+- `tools/add_books.py` adds or removes books from the data files.
+- `tools/build.py` regenerates `index.html`.
+
+## Updating
+
+```sh
+python3 tools/add_books.py new_books.json     # see the script header for the record format
+python3 tools/add_books.py --remove 9780000000000
+python3 tools/build.py
+git add -A && git commit -m "Add new Living Library books" && git push
+```
+
+A weekly scheduled task does this automatically after it adds new books to the Bookshop list.
