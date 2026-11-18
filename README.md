@@ -20,6 +20,7 @@ Live page (GitHub Pages): https://scottysegal727.github.io/living-library/
 - `src/template.html` holds the layout, styles and script.
 - `data/books.json` has one record per book (ISBN, title, author, category, genres, subjects, publisher, year, pages, format, description).
 - `data/covers.json` has small built-in cover thumbnails keyed by ISBN.
+- `data/pending.json` lists books the weekly task added to the widget that still need re-checking and adding on the Bookshop list.
 - `tools/add_books.py` adds or removes books from the data files.
 - `tools/build.py` regenerates `index.html`.
 

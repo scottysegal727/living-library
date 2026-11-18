@@ -11,7 +11,12 @@ product page:
    "pub": "Publisher", "date": "2011-03-01", "pages": 224,
    "fmt": "Paperback", "desc": "First ~320 characters of the description",
    "cover": "<optional base64 WebP/JPEG thumbnail, about 180px tall>",
-   "category": "<optional override: one of CATEGORIES>"}
+   "category": "<optional override: one of CATEGORIES>",
+   "genres": ["<optional: broad shelf names, e.g. Poetry, Literary Fiction>"],
+   "topics": ["<optional: subject names, e.g. Coming of Age>"]}
+
+When the shelf links are not available (for example when the page was read as text),
+leave "shelves" out and give "category", "genres" and "topics" instead.
 """
 import html, json, pathlib, re, sys
 
@@ -68,12 +73,14 @@ def shape(b):
             topics.append(c)
     authors = b.get("authors") or ["Unknown"]
     a0 = html.unescape(re.sub(r"^(Professor|Author|Dr\.?)\s+", "", authors[0]))
+    if b.get("topics"):
+        topics = [clean_topic(t) for t in b["topics"] if clean_topic(t) not in SKIP_TOPICS]
     cat = b.get("category") or categorise(names, pre)
     if cat not in CATEGORIES:
         raise SystemExit(f"unknown category {cat!r} for {b['isbn']}")
     fmt = (b.get("fmt") or "Paperback").split("/")[-1]
     return dict(i=b["isbn"], t=clean_title(b["name"]), a=a0, n=len(authors), c=cat,
-                g=[n for n, h in shelves if "/bisac/" not in h], k=topics,
+                g=b.get("genres") or [n for n, h in shelves if "/bisac/" not in h], k=topics,
                 p=b.get("pub") or "", y=int((b.get("date") or "0")[:4] or 0),
                 pg=b.get("pages") or 0, f={"EBook": "Ebook"}.get(fmt, fmt),
                 d=html.unescape(b.get("desc") or "")[:320])
