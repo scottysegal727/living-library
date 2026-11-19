@@ -66,15 +66,19 @@ label.sel{display:flex;flex-direction:column;gap:3px;font-size:.74rem;font-weigh
 .tags{display:flex;flex-wrap:wrap;gap:5px}
 .tag{font:inherit;font-size:.78rem;border:0;background:var(--wash);color:var(--ink);border-radius:4px;padding:2px 7px;cursor:pointer;text-align:left}
 .tag:hover{background:#e3e8ed}
-.buy{margin-top:auto;align-self:flex-start;font-size:.9rem;font-weight:600;color:#fff;background:var(--red);text-decoration:none;border-radius:6px;padding:6px 11px}
+.actions{margin-top:auto;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.buy,.post{font-size:.9rem;font-weight:600;color:#fff;text-decoration:none;border-radius:6px;padding:6px 11px}
+.buy{background:var(--red)}
 .buy:hover{background:var(--red-dark)}
+.post{background:var(--navy)}
+.post:hover{background:#0c2638}
 .desc{display:none;margin:0;font-size:.93rem;color:#444;max-width:70ch}
 .list .grid{grid-template-columns:1fr;gap:0}
-.list .card{display:grid;grid-template-columns:86px 1fr;grid-template-areas:"cover cat" "cover title" "cover author" "cover meta" "cover desc" "cover tags" "cover buy";column-gap:16px;row-gap:4px;padding:16px 0;border-bottom:1px solid var(--line)}
+.list .card{display:grid;grid-template-columns:86px 1fr;grid-template-areas:"cover cat" "cover title" "cover author" "cover meta" "cover desc" "cover tags" "cover actions";column-gap:16px;row-gap:4px;padding:16px 0;border-bottom:1px solid var(--line)}
 .list .cover{grid-area:cover;align-self:start}
 .list .cover .ph{font-size:.62rem;padding:6px}
 .list .cat{grid-area:cat}.list .title{grid-area:title;font-size:1.08rem}.list .author{grid-area:author}.list .meta{grid-area:meta}
-.list .desc{grid-area:desc;display:block;margin-top:4px}.list .tags{grid-area:tags;margin-top:4px}.list .buy{grid-area:buy;margin-top:8px;justify-self:start}
+.list .desc{grid-area:desc;display:block;margin-top:4px}.list .tags{grid-area:tags;margin-top:4px}.list .actions{grid-area:actions;margin-top:8px;flex-direction:row;flex-wrap:wrap}
 .more{display:flex;justify-content:center;margin-top:26px}
 .more button{font:inherit;font-weight:600;border:1px solid var(--red);color:var(--red-dark);background:#fff;border-radius:8px;padding:10px 20px;cursor:pointer}
 .more button:hover{background:var(--wash)}
@@ -196,7 +200,10 @@ label.sel{display:flex;flex-direction:column;gap:3px;font-size:.74rem;font-weigh
     li.appendChild(el('p','meta',bits.join(' · ')));
     if(b.d)li.appendChild(el('p','desc',b.d+(b.d.length>=318?'…':'')));
     if(b.k.length){var tg=el('div','tags');b.k.slice(0,3).forEach(function(k){var t=el('button','tag',k);t.type='button';t.dataset.topic=k;t.title='Show all books filed under '+k;tg.appendChild(t)});li.appendChild(tg)}
-    var buy=el('a','buy','Buy on Bookshop');buy.href=link(b);buy.target='_blank';buy.rel='noopener sponsored';li.appendChild(buy);
+    var act=el('div','actions');
+    var buy=el('a','buy','Buy on Bookshop');buy.href=link(b);buy.target='_blank';buy.rel='noopener sponsored';act.appendChild(buy);
+    if(b.u&&b.u.length){var po=el('a','post','See the library post');po.href=b.u[0];po.target='_blank';po.rel='noopener';po.setAttribute('aria-label','See the Living Library post about '+b.t);act.appendChild(po)}
+    li.appendChild(act);
     return li;
   }
   var SORT={

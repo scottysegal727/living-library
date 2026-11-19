@@ -18,7 +18,7 @@ Live page (GitHub Pages): https://scottysegal727.github.io/living-library/
 
 - `index.html` is the published widget. It is generated; do not edit it by hand.
 - `src/template.html` holds the layout, styles and script.
-- `data/books.json` has one record per book (ISBN, title, author, category, genres, subjects, publisher, year, pages, format, description).
+- `data/books.json` has one record per book (ISBN, title, author, category, genres, subjects, publisher, year, pages, format, description, and `u`: the Living Library post URLs about it, newest first). The "See the library post" button opens the newest post; Circle shows it only to signed-in members.
 - `data/covers.json` has small built-in cover thumbnails keyed by ISBN.
 - `data/pending.json` lists books the weekly task added to the widget that still need re-checking and adding on the Bookshop list.
 - `tools/add_books.py` adds or removes books from the data files.
@@ -29,6 +29,7 @@ Live page (GitHub Pages): https://scottysegal727.github.io/living-library/
 ```sh
 python3 tools/add_books.py new_books.json     # see the script header for the record format
 python3 tools/add_books.py --remove 9780000000000
+python3 tools/add_books.py --link 9780000000000 https://community.pocketmfa.com/c/the-living-library/post-slug   # new post about a book already listed
 python3 tools/build.py
 git add -A && git commit -m "Add new Living Library books" && git push
 ```

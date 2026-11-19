@@ -2,6 +2,9 @@
 """Add or replace books in data/books.json.
 
 Usage: python3 tools/add_books.py new_books.json [--remove ISBN ...]
+       python3 tools/add_books.py --link ISBN POST_URL
+         (adds a Living Library post link to a book already in the widget; the newest
+          link is shown first, so pass the post the button should open)
 
 new_books.json is a JSON array of raw records read from each book's Bookshop.org
 product page:
@@ -13,7 +16,8 @@ product page:
    "cover": "<optional base64 WebP/JPEG thumbnail, about 180px tall>",
    "category": "<optional override: one of CATEGORIES>",
    "genres": ["<optional: broad shelf names, e.g. Poetry, Literary Fiction>"],
-   "topics": ["<optional: subject names, e.g. Coming of Age>"]}
+   "topics": ["<optional: subject names, e.g. Coming of Age>"],
+   "post_url": "<the Circle post about this book, https://community.pocketmfa.com/c/the-living-library/...>"}
 
 When the shelf links are not available (for example when the page was read as text),
 leave "shelves" out and give "category", "genres" and "topics" instead.
@@ -79,7 +83,11 @@ def shape(b):
     if cat not in CATEGORIES:
         raise SystemExit(f"unknown category {cat!r} for {b['isbn']}")
     fmt = (b.get("fmt") or "Paperback").split("/")[-1]
-    return dict(i=b["isbn"], t=clean_title(b["name"]), a=a0, n=len(authors), c=cat,
+    urls = [u for u in ([b.get("post_url")] + list(b.get("post_urls") or [])) if u]
+    for u in urls:
+        if not u.startswith("https://community.pocketmfa.com/"):
+            raise SystemExit(f"post_url must be a community.pocketmfa.com link, got {u!r}")
+    return dict(i=b["isbn"], t=clean_title(b["name"]), a=a0, n=len(authors), c=cat, u=urls,
                 g=b.get("genres") or [n for n, h in shelves if "/bisac/" not in h], k=topics,
                 p=b.get("pub") or "", y=int((b.get("date") or "0")[:4] or 0),
                 pg=b.get("pages") or 0, f={"EBook": "Ebook"}.get(fmt, fmt),
@@ -88,6 +96,20 @@ def shape(b):
 
 def main():
     args = sys.argv[1:]
+    if args[:1] == ["--link"]:
+        if len(args) != 3:
+            raise SystemExit("usage: --link ISBN POST_URL")
+        isbn, url = args[1], args[2]
+        if not url.startswith("https://community.pocketmfa.com/"):
+            raise SystemExit("POST_URL must be a community.pocketmfa.com link")
+        books = json.loads((root / "data/books.json").read_text(encoding="utf-8"))
+        hit = [x for x in books if x["i"] == isbn]
+        if not hit:
+            raise SystemExit(f"no book with ISBN {isbn}")
+        hit[0]["u"] = [url] + [u for u in hit[0].get("u", []) if u != url]
+        (root / "data/books.json").write_text(json.dumps(books, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        print("linked", isbn, hit[0]["t"], "->", url)
+        return
     remove = set()
     if "--remove" in args:
         i = args.index("--remove")
@@ -100,6 +122,9 @@ def main():
         if not re.fullmatch(r"97[89]\d{10}", b["isbn"]):
             raise SystemExit(f"bad ISBN {b['isbn']!r}")
         rec = shape(b)
+        old = [x for x in books if x["i"] == rec["i"]]
+        if old:
+            rec["u"] = rec["u"] + [u for u in old[0].get("u", []) if u not in rec["u"]]
         books = [x for x in books if x["i"] != rec["i"]] + [rec]
         if b.get("cover"):
             covers[rec["i"]] = b["cover"]
