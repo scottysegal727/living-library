@@ -256,15 +256,16 @@ label.sel{display:flex;flex-direction:column;gap:3px;font-size:.74rem;font-weigh
   $('ll-vlist').addEventListener('click',function(){set('view','list')});
   // Fit-to-content embedding. A page that embeds this widget can size the iframe to the
   // widget's full height: it posts {ll:'hello'}; the widget then drops its own scrollbar and
-  // reports its height as {ll:'height',h} whenever it changes. Without that handshake the
+  // reports its height as {ll:'height',h,bar} whenever it changes (bar = bottom of the search
+  // bar, so the page can offer a "Back to search" button); {ll:'focus'} focuses the search box. Without that handshake the
   // widget keeps scrolling inside its frame as before.
   var host=null,hostOrigin='*',lastH=0,ro=null;
   function tell(m){try{(host||window.parent).postMessage(m,host?hostOrigin:'*')}catch(e){}}
-  function reportH(){var h=Math.ceil(document.body.getBoundingClientRect().height);if(h&&h!==lastH){lastH=h;tell({ll:'height',h:h})}}
+  function reportH(){var h=Math.ceil(document.body.getBoundingClientRect().height);if(h&&h!==lastH){lastH=h;var bar=document.querySelector('.bar');tell({ll:'height',h:h,bar:bar?Math.ceil(bar.getBoundingClientRect().bottom+window.scrollY):0})}}
   function toTop(){if(host)tell({ll:'top'});else window.scrollTo(0,0)}
   if(window.parent!==window){
     window.addEventListener('message',function(e){
-      var d=e.data;if(!d||d.ll!=='hello'||e.source!==window.parent)return;
+      var d=e.data;if(!d||e.source!==window.parent)return;if(d.ll==='focus'&&host){try{$('ll-q').focus({preventScroll:true})}catch(x){}return}if(d.ll!=='hello')return;
       host=e.source;hostOrigin=e.origin;document.documentElement.classList.add('ll-fit');lastH=0;reportH();
       if(!ro){if(window.ResizeObserver){ro=new ResizeObserver(reportH);ro.observe(document.body)}else{ro=setInterval(reportH,400)}}
     });
