@@ -9,30 +9,17 @@ Live page (GitHub Pages): https://scottysegal727.github.io/living-library/
 
 ## Embed
 
-Paste this where the widget should appear. The script sizes the frame to the widget's full
-height, so the page has a single scrollbar and the widget never scrolls on its own:
+Paste this where the widget should appear (on pocketmfa.com it is in a Divi Code module):
 
 ```html
 <iframe id="living-library" src="https://scottysegal727.github.io/living-library/"
-        title="The Living Library" style="display:block;width:100%;height:1200px;border:0"></iframe>
-<script>
-(function(){
-  var ORIGIN="https://scottysegal727.github.io";
-  function frame(){return document.getElementById("living-library")}
-  function hello(){var f=frame();if(f&&f.contentWindow)f.contentWindow.postMessage({ll:"hello"},ORIGIN)}
-  window.addEventListener("message",function(e){
-    var f=frame();if(e.origin!==ORIGIN||!f||e.source!==f.contentWindow)return;
-    var d=e.data||{};
-    if(d.ll==="ready")hello();
-    else if(d.ll==="height"&&d.h>0)f.style.height=d.h+"px";
-    else if(d.ll==="top"){var t=f.getBoundingClientRect().top;if(t<0)window.scrollBy({top:t-90,behavior:"smooth"})}
-  });
-  hello();
-})();
-</script>
+        title="The Living Library" style="display:block;width:100%;height:2500px;border:0"></iframe>
+<script src="https://scottysegal727.github.io/living-library/embed.js"></script>
 ```
 
-Without the script the iframe still works; the widget then scrolls inside its own frame.
+`embed.js` sizes the frame to the widget's full height, so the page has a single scrollbar,
+and shows a "Back to search" button once the search bar has scrolled out of view. Without
+the script the iframe still works; the widget then scrolls inside its own frame.
 
 ## Files
 
@@ -43,6 +30,7 @@ Without the script the iframe still works; the widget then scrolls inside its ow
 - `data/pending.json` lists books the weekly task added to the widget that still need re-checking and adding on the Bookshop list.
 - `tools/add_books.py` adds or removes books from the data files.
 - `tools/build.py` regenerates `index.html`.
+- `embed.js` is the helper script for the page that embeds the widget (see Embed).
 
 ## Updating
 
