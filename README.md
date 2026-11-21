@@ -9,10 +9,30 @@ Live page (GitHub Pages): https://scottysegal727.github.io/living-library/
 
 ## Embed
 
+Paste this where the widget should appear. The script sizes the frame to the widget's full
+height, so the page has a single scrollbar and the widget never scrolls on its own:
+
 ```html
-<iframe src="https://scottysegal727.github.io/living-library/" title="The Living Library"
-        style="width:100%;height:900px;border:0" loading="lazy"></iframe>
+<iframe id="living-library" src="https://scottysegal727.github.io/living-library/"
+        title="The Living Library" style="display:block;width:100%;height:1200px;border:0"></iframe>
+<script>
+(function(){
+  var ORIGIN="https://scottysegal727.github.io";
+  function frame(){return document.getElementById("living-library")}
+  function hello(){var f=frame();if(f&&f.contentWindow)f.contentWindow.postMessage({ll:"hello"},ORIGIN)}
+  window.addEventListener("message",function(e){
+    var f=frame();if(e.origin!==ORIGIN||!f||e.source!==f.contentWindow)return;
+    var d=e.data||{};
+    if(d.ll==="ready")hello();
+    else if(d.ll==="height"&&d.h>0)f.style.height=d.h+"px";
+    else if(d.ll==="top"){var t=f.getBoundingClientRect().top;if(t<0)window.scrollBy({top:t-90,behavior:"smooth"})}
+  });
+  hello();
+})();
+</script>
 ```
+
+Without the script the iframe still works; the widget then scrolls inside its own frame.
 
 ## Files
 

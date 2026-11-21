@@ -24,6 +24,10 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
+/* Embedded on a page that sizes the frame to fit (see README): no inner scrolling. */
+html.ll-fit,html.ll-fit body{height:auto;overflow:hidden}
+html.ll-fit body{display:flow-root}
+html.ll-fit .bar{position:static}
 body{background:var(--page);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
 a{color:inherit}
 .band{background:var(--navy);color:#fff;padding:20px}
@@ -245,11 +249,27 @@ label.sel{display:flex;flex-direction:column;gap:3px;font-size:.74rem;font-weigh
   $('ll-topic').addEventListener('change',function(e){set('topic',e.target.value)});
   $('ll-sort').addEventListener('change',function(e){set('sort',e.target.value)});
   cats.addEventListener('click',function(e){var c=e.target.closest('.chip');if(c)set('cat',c.dataset.cat)});
-  $('ll-grid').addEventListener('click',function(e){var t=e.target.closest('.tag');if(!t)return;var sel=$('ll-topic');var has=[].some.call(sel.options,function(o){return o.value===t.dataset.topic});if(has){sel.value=t.dataset.topic;set('topic',t.dataset.topic)}else{$('ll-q').value=t.dataset.topic;set('q',t.dataset.topic)}window.scrollTo(0,0)});
+  $('ll-grid').addEventListener('click',function(e){var t=e.target.closest('.tag');if(!t)return;var sel=$('ll-topic');var has=[].some.call(sel.options,function(o){return o.value===t.dataset.topic});if(has){sel.value=t.dataset.topic;set('topic',t.dataset.topic)}else{$('ll-q').value=t.dataset.topic;set('q',t.dataset.topic)}toTop()});
   $('ll-more').addEventListener('click',function(){state.shown+=PAGE;render()});
   $('ll-clear').addEventListener('click',function(){state.q=state.cat=state.genre=state.topic='';$('ll-q').value='';$('ll-genre').value='';$('ll-topic').value='';state.shown=PAGE;render()});
   $('ll-vgrid').addEventListener('click',function(){set('view','grid')});
   $('ll-vlist').addEventListener('click',function(){set('view','list')});
+  // Fit-to-content embedding. A page that embeds this widget can size the iframe to the
+  // widget's full height: it posts {ll:'hello'}; the widget then drops its own scrollbar and
+  // reports its height as {ll:'height',h} whenever it changes. Without that handshake the
+  // widget keeps scrolling inside its frame as before.
+  var host=null,hostOrigin='*',lastH=0,ro=null;
+  function tell(m){try{(host||window.parent).postMessage(m,host?hostOrigin:'*')}catch(e){}}
+  function reportH(){var h=Math.ceil(document.body.getBoundingClientRect().height);if(h&&h!==lastH){lastH=h;tell({ll:'height',h:h})}}
+  function toTop(){if(host)tell({ll:'top'});else window.scrollTo(0,0)}
+  if(window.parent!==window){
+    window.addEventListener('message',function(e){
+      var d=e.data;if(!d||d.ll!=='hello'||e.source!==window.parent)return;
+      host=e.source;hostOrigin=e.origin;document.documentElement.classList.add('ll-fit');lastH=0;reportH();
+      if(!ro){if(window.ResizeObserver){ro=new ResizeObserver(reportH);ro.observe(document.body)}else{ro=setInterval(reportH,400)}}
+    });
+    tell({ll:'ready'});
+  }
   render();
 })();
 </script>
